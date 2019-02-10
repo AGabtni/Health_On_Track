@@ -5,19 +5,25 @@ import psycopg2
 import sys
 from PyQt5.QtCore import Qt,QSize, QPropertyAnimation
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMainWindow, QLineEdit, QTableWidget, QTableWidgetItem, QMessageBox, QGridLayout, QDesktopWidget, QFrame
-from PyQt5.QtGui import QIcon, QFont, QFontDatabase
+from PyQt5.QtGui import QIcon, QFont, QFontDatabase, QPixmap
 from datetime import datetime
 
 #-------------------------------------------------
 #Classes
 #-------------------------------------------------
 
+
+
 class Page(QMainWindow):
     '''Parent class of all pages'''
     def __init__(self):
         #Constructor
         super().__init__()
-   
+
+        font_db = QFontDatabase()
+        font_id = font_db.addApplicationFont("Fonts\Quicksand.otf")
+        families = font_db.applicationFontFamilies(font_id)
+
     def defaultWindow(self,pageName):
         #Default settings for each page
         self.setWindowTitle(pageName)
@@ -33,6 +39,51 @@ class Page(QMainWindow):
         error.setWindowTitle("Error")
         error.exec_()
 
+class WelcomeWindow(Page):
+    def __init__(self):
+        super().__init__()
+        self.defaultWindow('Welcome Page')
+        centralWidget = QWidget(self)
+        self.setCentralWidget(centralWidget)
+
+        gridLayout = QGridLayout(self)
+        centralWidget.setLayout(gridLayout)
+
+        #title
+        title = QLabel("HealthONTrack", self)
+        title.setFont(QFont('Quicksand', pointSize = 25, weight = QFont.Bold))
+        title.setAlignment(Qt.AlignHCenter)
+        gridLayout.addWidget(title, 0, 0)
+
+        #image
+        foodimage = QLabel(self)
+        picture = QPixmap('healthyfoods.jpg')
+        foodimage.setPixmap(picture)
+        foodimage.adjustSize()
+        foodimage.move(325, 150)
+
+        #paragraph
+        bodytext = QLabel("HealthONTrack is an app that helps you to track your calories\n\
+and macro intake throughout the day. Our goal is to help\n\
+people achieve their fitness goals, since whether you\n\
+want to lose weight, gain muscle or anything in between,\n\
+nutrition is the most important factor in achieving fitness success.", self)
+        bodytext.setFont(QFont('Quicksand', pointSize = 14))
+        bodytext.move(150,450)
+        bodytext.setAlignment(Qt.AlignCenter)
+        bodytext.adjustSize()
+
+        #button
+        self.startbutton = QPushButton('Start', self)
+        self.startbutton.resize(200, 100)
+        self.startbutton.move(425, 650)
+        self.startbutton.setStyleSheet("background-color: white; font-size: 30px")
+        self.startbutton.clicked.connect(self.nextWindow)
+
+    def nextWindow(self):
+        self.w = RegisterPage()
+        self.w.show()
+        self.hide()
 class RegisterPage (Page):
     def __init__(self):
         super().__init__()
@@ -63,12 +114,12 @@ class RegisterPage (Page):
             self.textbox[i].setStyleSheet("background-color: white")
 
         self.L1.move(390,50)
-        self.L3.move(170,200)
-        self.L4.move(170,280)
-        self.L5.move(170,360)
-        self.L6.move(170,440)
-        self.L7.move(170,520)
-        self.L8.move(170,600)
+        self.L3.move(125,200)
+        self.L4.move(125,280)
+        self.L5.move(125,360)
+        self.L6.move(125,440)
+        self.L7.move(125,520)
+        self.L8.move(125,600)
         
         self.L1.setStyleSheet('font-size: 20pt; font-weight: bold')
         self.L3.setStyleSheet('font-size: 14pt')
@@ -127,6 +178,7 @@ class InputPage(Page):
         self.addButton()
         self.clearButton()
         self.saveButton()
+        self.backButton()
         self.show()
 
     def inputWindow(self):
@@ -169,8 +221,21 @@ class InputPage(Page):
                 item = QTableWidgetItem()
                 item.setText(str(food[y]))
                 self.table.setItem(x,y,item)
-        
-        
+
+    def backButton(self):
+        #Display the add a row button
+        self.pushButton = QPushButton("Back", self)
+        self.pushButton.move(0,0)
+        self.pushButton.setStyleSheet("background-color: white; font-size: 24px")
+        self.pushButton.resize(78,50)
+        self.pushButton.setToolTip("<h4>Click to go back mofo</h4>")
+        self.pushButton.clicked.connect(self.backWindow)
+
+    def backWindow(self):
+        self.w = WelcomePage()
+        self.w.show()
+        self.hide()
+
     def addButton(self):
         #Display the add a row button
         self.pushButton = QPushButton("+", self)
@@ -272,9 +337,9 @@ class WelcomePage (Page):
         self.show()
     
     def welcomeWindow(self):    
-        self.setMinimumSize(QSize(1000,900))
-        self.setWindowTitle("Welcome")
+
        # centralWidget = QWidget(self)
+        self.defaultWindow('Home Page')
        # self.setCentralWidget(centralWidget)
 
         #gridLayout = QGridLayout(self)
@@ -296,14 +361,22 @@ class WelcomePage (Page):
         L7 = QLabel("Height : " + str(table[0][4]), self)
         L8 = QLabel("Calories Intake per day: " + str(table[0][5]), self)
 
+        L1.setStyleSheet('font-size: 25pt ')
+        L2.setStyleSheet('font-size: 20pt ')
+        L3.setStyleSheet('font-size: 18pt ')
+        L4.setStyleSheet('font-size: 18pt ')
+        L5.setStyleSheet('font-size: 18pt ')
+        L6.setStyleSheet('font-size: 18pt ')
+        L7.setStyleSheet('font-size: 18pt ')
+        L8.setStyleSheet('font-size: 18pt ')
 
-       # h3Font = QFont(families[0],30, QFont.Bold)
+    # h3Font = QFont(families[0],30, QFont.Bold)
         #h2Font = QFont(families[0],16, QFont.DemiBold)
         #h1Font = QFont(families[0],12)
 
 
        # L1.setFont(h3Font)
-        L1.move(450,50)
+        L1.move(350,50)
 
 
         #L2.setFont(h2Font)
@@ -437,7 +510,9 @@ cursor = conn.cursor()
 #Open Up UI`
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    example = RegisterPage()
+    app.setFont(QFont('Quicksand'))
+    example = WelcomeWindow()
+    example.show()
     sys.exit(app.exec_())
 
 #Exit
