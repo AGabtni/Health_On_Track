@@ -87,7 +87,7 @@ class WelcomPage (QMainWindow):
         '''
         returns weight of the person
         '''
-        return seld.textbox[3].text()
+        return self.textbox[3].text()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
