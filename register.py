@@ -55,7 +55,9 @@ class WelcomPage (QMainWindow):
         self.L5.adjustSize()
         self.L6.adjustSize()
         self.L7.adjustSize()
-        self.L8.adjustSize()        
+        self.L8.adjustSize()
+        self.show()
+        
         
     def checkInputType(self, field):
         '''
@@ -73,20 +75,19 @@ class WelcomPage (QMainWindow):
         '''
         returns the name of person
         '''
-        return self.textbox[0]+" "+self.textbox[1]
+        return self.textbox[0].text()+" "+self.textbox[1].text()
     
     def getAge(self):
         '''
         returns age of the person
         '''
-        return self.textbox[2]
+        return self.textbox[2].text()
     
     def getWeight(self):
         '''
         returns weight of the person
         '''
-        return seld.textbox[3]
-    
+        return seld.textbox[3].text()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
