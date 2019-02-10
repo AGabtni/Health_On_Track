@@ -10,6 +10,7 @@ class WelcomeWindow(QMainWindow):
 
         self.setMinimumSize(QSize(1000, 900))
         self.setWindowTitle("Welcome Page")
+        self.setStyleSheet("background-color: lightgreen")
 
         centralWidget = QWidget(self)
         self.setCentralWidget(centralWidget)
@@ -41,10 +42,11 @@ nutrition is the most important factor in achieving fitness success.", self)
         bodytext.setAlignment(Qt.AlignJustify)
         bodytext.adjustSize()
 
-        #
-        startbutton = QPushButton('Start', self)
-        startbutton.resize(200, 100)
-        startbutton.move(425, 600)
+        #button
+        self.startbutton = QPushButton('Start', self)
+        self.startbutton.resize(200, 100)
+        self.startbutton.move(425, 600)
+        self.startbutton.setStyleSheet("background-color: white; font-size: 30px")
 
 
 
