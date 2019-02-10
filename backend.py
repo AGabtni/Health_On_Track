@@ -3,9 +3,9 @@
 
 import psycopg2
 import sys
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMainWindow, QLineEdit, QTableWidget, QTableWidgetItem, QMessageBox
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import Qt,QSize, QPropertyAnimation
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QMainWindow, QLineEdit, QTableWidget, QTableWidgetItem, QMessageBox, QGridLayout, QDesktopWidget, QFrame
+from PyQt5.QtGui import QIcon, QFont, QFontDatabase
 from datetime import datetime
 
 #-------------------------------------------------
@@ -33,6 +33,88 @@ class Page(QMainWindow):
         error.setWindowTitle("Error")
         error.exec_()
 
+class RegisterPage (Page):
+    def __init__(self):
+        super().__init__()
+        self.registerWindow()
+        self.show()
+
+    def registerWindow(self):
+        self.defaultWindow("Register Page")
+        self.L1 = QLabel("Register Account", self)
+        self.L3 = QLabel("First Name : ", self)
+        self.L4 = QLabel("Last Name :", self)
+        self.L5 = QLabel("Age :", self)
+        self.L6 = QLabel("Weight (lbs):", self)
+        self.L7 = QLabel("Height (cm):", self)
+        self.L8 = QLabel("Calories Intake/day:", self)
+        self.button = QPushButton('Submit', self)
+        self.button.setToolTip('Submit form')
+        self.button.move(380,700)
+        self.button.setStyleSheet("background-color: white; font-size: 16px")
+        self.button.resize(300,40)
+        self.button.clicked.connect(self.nextWindow)
+
+        self.textbox = [QLineEdit(self) for i in range(6)]
+        pos1 = (380,120)
+        for i in range(6):
+            self.textbox[i].move(pos1[0], pos1[1]+(i+1)*80)
+            self.textbox[i].resize(300,40)
+            self.textbox[i].setStyleSheet("background-color: white")
+
+        self.L1.move(390,50)
+        self.L3.move(170,200)
+        self.L4.move(170,280)
+        self.L5.move(170,360)
+        self.L6.move(170,440)
+        self.L7.move(170,520)
+        self.L8.move(170,600)
+        
+        self.L1.setStyleSheet('font-size: 20pt; font-weight: bold')
+        self.L3.setStyleSheet('font-size: 14pt')
+        self.L4.setStyleSheet('font-size: 14pt')
+        self.L5.setStyleSheet('font-size: 14pt')
+        self.L6.setStyleSheet('font-size: 14pt')
+        self.L7.setStyleSheet('font-size: 14pt')
+        self.L8.setStyleSheet('font-size: 14pt')
+        
+        self.L1.adjustSize()
+        self.L3.adjustSize()
+        self.L4.adjustSize()
+        self.L5.adjustSize()
+        self.L6.adjustSize()
+        self.L7.adjustSize()
+        self.L8.adjustSize()  
+
+    def nextWindow(self):  
+        user = []
+        for count,input in enumerate(self.textbox):
+            if (input.text() == ""):
+                self.errorMessage("Invalid Input")
+                return None
+            if(count == 2 or count == 5):
+                try:
+                    integer = int(input.text())
+                    user.append(integer)
+                except: 
+                    self.errorMessage("Invalid Input")
+                    return None
+            elif(count == 3 or count == 4):
+                try:
+                    floating = float(input.text())
+                    user.append(floating)
+                except:
+                    self.errorMessage("Invalid Input")
+                    return None
+            else:  
+                user.append(input.text())
+        update_user_info(cursor,user)
+        conn.commit()
+        
+        self.w = WelcomePage()
+        self.w.show()
+        self.hide()
+        
 class InputPage(Page):
     '''Page for user to enter all their expenses in table'''
     def __init__(self):
@@ -158,35 +240,148 @@ class InputPage(Page):
                 return None
             food = (descr,amount,cal,carbs,protein,fat)
             add_food_info(cursor,food)
-
+           
     def clear(self):
         clear_food_table(cursor)
         self.currentRowCount = 0
         self.printTable()
 
-class SettingsPage(Page): 
-    def __init__(self):
-       #Constructor
-        super().__init__()
-        self.settingsWindow()
-         
-    def settingsWindow(self):
-        self.defaultWindow("Settings Page")
+class Button ():
+    def __init__(self,name,parent,x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.name = name
 
+
+        pybutton = QPushButton(name,parent)
+        pybutton.setStyleSheet('QPushButton {background-color: #A3C1DA; color: blue;}')
+        pybutton.resize(width,height)
+        pybutton.move(x,y)
+        pybutton.clicked.connect(self.clickMethod)
+
+    def clickMethod(self):
+        print('Clicked ')
+
+
+class WelcomePage (Page):
+    def __init__(self):
+        super().__init__()
+        self.welcomeWindow()
+        self.show()
+    
+    def welcomeWindow(self):    
+        self.setMinimumSize(QSize(1000,900))
+        self.setWindowTitle("Welcome")
+       # centralWidget = QWidget(self)
+       # self.setCentralWidget(centralWidget)
+
+        #gridLayout = QGridLayout(self)
+        #centralWidget.setLayout(gridLayout)
+
+        #font_db = QFontDatabase()
+        #font_id = font_db.addApplicationFont("Fonts\Pacifico.ttf")
+        #families = font_db.applicationFontFamilies(font_id)
+
+        cursor.execute("SELECT * FROM user_info")
+        table = cursor.fetchall()
+
+        L1 = QLabel("Welcome " + table[0][0], self)
+        L2 = QLabel("Review Information", self)
+        L3 = QLabel("First Name : " + table[0][0], self)
+        L4 = QLabel("Last Name :" + table[0][1], self)
+        L5 = QLabel("Age : " + str(table[0][2]), self)
+        L6 = QLabel("Weight : "+ str(table[0][3]), self)
+        L7 = QLabel("Height : " + str(table[0][4]), self)
+        L8 = QLabel("Calories Intake per day: " + str(table[0][5]), self)
+
+
+       # h3Font = QFont(families[0],30, QFont.Bold)
+        #h2Font = QFont(families[0],16, QFont.DemiBold)
+        #h1Font = QFont(families[0],12)
+
+
+       # L1.setFont(h3Font)
+        L1.move(450,50)
+
+
+        #L2.setFont(h2Font)
+        L2.move(50, 220)
+
+       # L3.setFont(h1Font)
+        L3.move(70,300)
+
+        #L4.setFont(h1Font)
+        L4.move(70,380)
+
+
+       # L5.setFont(h1Font)
+        L5.move(70,460)
+
+       # L6.setFont(h1Font)
+        L6.move(70,520)
+
+       # L7.setFont(h1Font)
+        L7.move(70,600)
+
+       # L8.setFont(h1Font)
+        L8.move(70 ,680)
+
+        L1.adjustSize()
+        L2.adjustSize()
+        L3.adjustSize()
+        L4.adjustSize()
+        L5.adjustSize()
+        L6.adjustSize()
+        L7.adjustSize()
+        L8.adjustSize()
+
+        qtRectangle = self.frameGeometry()
+        centerPoint = QDesktopWidget().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
+
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
+            
+        buttonM = QPushButton("Modify",self)
+        buttonM.setStyleSheet('QPushButton {background-color: #A3C1DA; color: blue;}')
+        buttonM.resize(100,50)
+        buttonM.move(100,800)
+        buttonM.clicked.connect(self.modifyWindow)
+
+        buttonS = QPushButton("Table",self)
+        buttonS.setStyleSheet('QPushButton {background-color: #A3C1DA; color: blue;}')
+        buttonS.resize(100,50)
+        buttonS.move(700,800)
+        buttonS.clicked.connect(self.tableWindow)
+
+    def modifyWindow(self):
+        self.w = RegisterPage()
+        self.w.show()
+        self.hide()
+    
+    def tableWindow(self):
+        self.w = InputPage()
+        self.w.show()
+        self.hide()
+    
 #-------------------------------------------------
 # Helper Functions
 #-------------------------------------------------
 def create_user_info_table(cursor):
-    cursor.execute("CREATE TABLE user_info (FirstName varchar, LastName varchar, Age int, Weight float, Height float, Email varchar, Gender varchar, CaloriesIntake int);")
+    cursor.execute("CREATE TABLE user_info (FirstName varchar, LastName varchar, Age int, Weight float8, Height float8, CaloriesIntake int);")
 
 def create_food_info_table(cursor):
     cursor.execute("CREATE TABLE food_info (Description varchar, Amount float8, Calories int, Carbs float8, Protein float8, Fat float8)")
 
 def add_user_info(cursor,user):
-    query = "INSERT INTO user_info (FirstName,LastName,Age,Weight,Height,Email,Gender,CaloriesIntake)" \
+    query = "INSERT INTO user_info (FirstName,LastName,Age,Weight,Height,CaloriesIntake)" \
             "VALUES ('" + user[0] + "','" + user[1] + "'," + str(user[2]) + "," + str(user[3]) + "," + str(user[4]) \
-             + ",'" + user[5] + "','" + user[6] + "'," + str(user[7]) + ");"
+             + "," + str(user[5]) + ");"
     cursor.execute(query)
+    print_tables(cursor)
 
 def add_food_info(cursor,food):
     query = "INSERT INTO food_info (Description,Amount,Calories,Carbs,Protein,Fat)" \
@@ -197,8 +392,7 @@ def add_food_info(cursor,food):
 
 def update_user_info(cursor,user):
     query = "UPDATE user_info SET FirstName = '" + user[0] + "', LastName = '" + user[1] + "', Age = " + str(user[2]) + \
-            ", Weight = " + str(user[3]) + ", Height = " + str(user[4]) + ", Email = '" + user[5] + "', Gender = '" + user[6] + \
-            "', CaloriesIntake = " + str(user[7]) 
+            ", Weight = " + str(user[3]) + ", Height = " + str(user[4]) + ", CaloriesIntake = " + str(user[5]) 
     cursor.execute(query) 
 
 def clear_food_table(cursor):
@@ -206,8 +400,8 @@ def clear_food_table(cursor):
     cursor.execute(query)
     conn.commit()
 
-def clear_user_table(cursor):
-    query = "TRUNCATE TABLE user_info;"
+def delete_user_table(cursor):
+    query = "DROP TABLE user_info;"
     cursor.execute(query)
 
 def print_tables(cursor):
@@ -236,23 +430,17 @@ conn = psycopg2.connect(dbname="postgres", user="postgres", password="kNjjulK0Bl
      host="35.239.255.246")   
 cursor = conn.cursor()
 
-
 #Create table and input details
 #create_user_info_table(cursor)
 #create_food_info_table(cursor)
 
-user = ("Bob", "Johnson", 18, 100, 175, "bob@johnson.com", "Male", 100)
-food = ("Apple", 100, 50, 0, 1, 5)
-
-
 #Open Up UI`
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    example = InputPage()
+    example = RegisterPage()
     sys.exit(app.exec_())
 
 #Exit
-
 conn.commit()
 conn.close()
 cursor.close()
